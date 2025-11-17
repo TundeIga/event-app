@@ -1,4 +1,5 @@
-import { Event } from "@/app/database";
+// import { Event } from "@/app/database";
+import Event from "@/app/database/event.model";
 import connectDB from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
       message: "Event created successfully",
       event: createdEvent,
     }, {status: 201});
-  } catch (e) {
+  } catch (e) { 
     console.error(e);
     return NextResponse.json(
       {
