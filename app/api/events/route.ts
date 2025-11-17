@@ -28,17 +28,22 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
 
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-      const uploadResult = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream({resource_type: "image", folder: "DevEvents"}, (error, result) => {
-          if (error) return reject(error);
-          resolve(result);
-        }).end(buffer);
-      })
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          { resource_type: "image", folder: "DevEvents" },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        )
+        .end(buffer);
+    });
 
-       event.image = (uploadResult as { secure_url: string }).secure_url;
+    event.image = (uploadResult as { secure_url: string }).secure_url;
 
     const createdEvent = await Event.create(event);
 
@@ -54,6 +59,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         mess: "Event Creation Failed",
+        error: e instanceof Error ? e.message : "Unknown",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    await connectDB();
+
+    const events = await Event.find().sort({ createdAt: -1 });
+    return NextResponse.json(
+      { message: "Events fetched successfully" , events},
+      { status: 200 }
+    );
+  } catch (e) {
+    return NextResponse.json(
+      {
+        message: "Failed to fetch events",
         error: e instanceof Error ? e.message : "Unknown",
       },
       { status: 500 }
